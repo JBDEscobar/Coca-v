@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sincronizar letra</title>
+  <style>
+    body { font-family: sans-serif; max-width: 720px; margin: 20px auto; padding: 0 12px; }
+    textarea { width: 100%; box-sizing: border-box; }
+    #cur { font-size: 1.4rem; min-height: 2.5rem; }
+    button { padding: 8px 14px; margin: 4px 4px 4px 0; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Sincronizar letra</h2>
+  <audio id="a" src="sound/The Weeknd - Earned It (Fifty Shades Of Grey).mp3" controls style="width:100%"></audio>
+
+  <ol>
+    <li>Pega la letra abajo (una línea por renglón).</li>
+    <li>Pulsa <b>Empezar</b>.</li>
+    <li>Presiona <b>ESPACIO</b> justo cuando empiece a cantarse cada línea.</li>
+    <li>Pulsa <b>Descargar lyrics.js</b> y guárdalo junto a flower.html.</li>
+  </ol>
+
+  <textarea id="t" rows="10" placeholder="Pega aquí la letra"></textarea>
+  <button id="go">Empezar</button>
+  <button id="undo">Deshacer última</button>
+  <button id="dl">Descargar lyrics.js</button>
+
+  <h3 id="cur"></h3>
+  <textarea id="out" rows="10" readonly></textarea>
+
+<script>
+  var a = document.getElementById("a");
+  var cur = document.getElementById("cur");
+  var out = document.getElementById("out");
+  var lines = [], i = 0, res = [];
+
+  function render() {
+    out.value = "const lyricsData = " + JSON.stringify(res, null, 2) + ";\n";
+    cur.textContent = i < lines.length ? "Siguiente: " + lines[i] : "¡Listo!";
+  }
+
+  document.getElementById("go").onclick = function () {
+    lines = document.getElementById("t").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+    i = 0; res = [];
+    render();
+    a.currentTime = 0;
+    a.play();
+    this.blur();
+  };
+
+  document.getElementById("undo").onclick = function () {
+    if (i > 0) { i--; res.pop(); render(); }
+    this.blur();
+  };
+
+  document.getElementById("dl").onclick = function () {
+    var blob = new Blob([out.value], { type: "text/javascript" });
+    var link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "lyrics.js";
+    link.click();
+    this.blur();
+  };
+
+  document.addEventListener("keydown", function (e) {
+    if (e.code !== "Space" || e.target.tagName === "TEXTAREA") return;
+    if (i >= lines.length || a.paused) return;
+    e.preventDefault();
+    res.push({ text: lines[i], time: Math.round(a.currentTime * 10) / 10 });
+    i++;
+    render();
+  });
+</script>
+</body>
+</html>
