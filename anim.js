@@ -40,3 +40,24 @@ function ocultarTitulo() {
 
 // Oculta el título 4:35 (275 s) después de empezar, igual que la duración de la canción
 setTimeout(ocultarTitulo, 275000);
+
+var aviso = document.createElement("div");
+aviso.textContent = "Toca la pantalla para activar la música 🎵";
+aviso.style.cssText =
+  "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);" +
+  "padding:10px 16px;background:rgba(0,0,0,.6);color:#fff;" +
+  "border-radius:20px;font:14px sans-serif;z-index:10;display:none";
+document.body.appendChild(aviso);
+
+function iniciarAudio() {
+  audio.play()
+    .then(function () { aviso.style.display = "none"; })
+    .catch(function () { aviso.style.display = "block"; });
+}
+
+iniciarAudio();
+["click", "touchstart"].forEach(function (ev) {
+  document.addEventListener(ev, function () {
+    if (audio.paused) iniciarAudio();
+  });
+});
